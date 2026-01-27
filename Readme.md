@@ -48,18 +48,56 @@ examples    LICENSE.pdf       QNN_NOTICE.txt          QNN_TFLITE_DELEGATE_Releas
 Use samsung remote test lab can get a phone runner
 https://developer.samsung.com/remotetestlab
 
-```shell
+Install SDK libs on Android device
 
+```shell
+adb push $QAIRT_SDK/lib/aarch64-android /data/local/tmp/
+adb push $QAIRT_SDK/lib/hexagon-v73/unsigned /data/local/tmp/hexagon-v73/
+```
+
+Alternative if adb push is very slow
+
+```shell
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/qairt_aarch64_android_libs.tar.gz && tar -xzf qairt_aarch64_android_libs.tar.gz"
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/qairt_hexagon_v79.tar.gz && tar -xzf qairt_hexagon_v79.tar.gz"
+```
+
+```shell
 tar -czf genie_bundle.tar.gz -C genie_bundle_llama3_1b llama_v3_2_1b_instruct-genie-w4-qualcomm-snapdragon-8-elite
 adb push genie_bundle.tar.gz /data/local/tmp/
-adb push $QAIRT_SDK/lib/aarch64-android/libGenie.so /data/local/tmp
-adb push $QAIRT_SDK/bin/aarch64-android/genie-t2t-run /data/local/tmp/
-adb shell "chmod +x /data/local/tmp/genie-t2t-run"
+```
+
+Note: if the adb push is very slow, there is a pre built binary
+
+```shell
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/genie_bundle.tar.gz"
 ```
 
 ```shell
-adb push genie_bundle_llama3_1b/llama_v3_2_1b_instruct-genie-w4-qualcomm-snapdragon-8-elite /data/local/tmp/genie_bundle/
+adb shell "cd /data/local/tmp && tar -xzvf genie_bundle.tar.gz --strip-components=1"
+adb push $QAIRT_SDK/bin/aarch64-android/genie-t2t-run /data/local/tmp/
+adb shell "chmod +x /data/local/tmp/genie-t2t-run"
+adb push prompt.txt /data/local/tmp/
 ```
+
+```shell
+export LD_LIBRARY_PATH=/data/local/tmp/aarch64-android:$LD_LIBRARY_PATH
+export ADSP_LIBRARY_PATH=/data/local/tmp/hexagon-v79/unsigned
+./genie-t2t-run -c genie_config.json --prompt_file prompt.txt --profile perf.json
+```
+
+##### FAQ
+
+1. `Failed to create device: 14001`. It's due to ADSP_LIBRARY version missing or mismatch.
+
+2. adb disconnected
+
+```
+Disconnected device: SM-S937N
+ADB disconnected from RDB
+```
+
+Close the RTL web client and reopen it, it will auto reboot the phone
 
 #### build Example from source
 
