@@ -1,0 +1,6 @@
+genie_bundle_*/
+.vscode
+export_assets/
+venv/
+*.tar.gz
+build*/
