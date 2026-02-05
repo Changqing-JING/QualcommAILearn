@@ -120,3 +120,74 @@ cmake -B build-android \
     -DCMAKE_EXE_LINKER_FLAGS="-L$QAIRT_SDK/lib/aarch64-android -lGenie"
 cmake --build build-android --parallel
 ```
+
+##### CNN model
+
+export module for npu
+
+```shell
+python -m qai_hub_models.models.efficientnet_b0.export --device "Samsung Galaxy S25" --device-os 15 --target-runtime qnn_context_binary --compile-options "--qairt_version 2.42" --skip-profiling --skip-inferencing --output-dir efficientnet_b0_npu
+```
+
+export for gpu
+
+```shell
+python -m qai_hub_models.models.efficientnet_b0.export --device "Samsung Galaxy S25" --device-os 15 --target-runtime qnn_dlc --compile-options "--qairt_version 2.42" --skip-profiling --skip-inferencing --output-dir efficientnet_b0_dlc
+```
+
+Build Sample aqpp
+
+```shell
+sudo apt install rename
+cd $QAIRT_SDK/examples/QNN/SampleApp/SampleApp
+export ANDROID_NDK_ROOT=$NDK
+make aarch64-android -j 16
+```
+
+Get test image
+
+```shell
+wget https://qaihub-public-assets.s3.us-west-2.amazonaws.com/qai-hub-models/models/imagenet_classifier/v1/dog.jpg
+python3 preprocess_image.py dog.jpg dog.raw
+```
+
+###### Test on device
+
+###### Deploy module
+
+```shell
+adb push efficientnet_b0_npu/efficientnet_b0-qnn_context_binary-float-qualcomm-snapdragon-8-elite-for-galaxy /data/local/tmp
+```
+
+Or when ADB is slow
+
+```shell
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/efficientnet_b0_npu.tar.gz && tar -xzvf efficientnet_b0.tar.gz --strip-components=1"
+```
+
+```shell
+adb push $QAIRT_SDK/examples/QNN/SampleApp/SampleApp/bin/aarch64-android/qnn-sample-app /data/local/tmp
+adb shell "chmod +x /data/local/tmp/qnn-sample-app"
+adb push dog.raw /data/local/tmp
+adb push input_list.txt /data/local/tmp
+```
+
+###### Run with GPU
+
+```shell
+adb shell "export LD_LIBRARY_PATH=/data/local/tmp/aarch64-android && cd /data/local/tmp && ./qnn-sample-app --backend /data/local/tmp/aarch64-android/libQnnGpu.so --dlc_path efficientnet_b0-qnn_dlc-float/efficientnet_b0.dlc --input_list input_list.txt --output_dir output --system_library /data/local/tmp/aarch64-android/libQnnSystem.so"
+```
+
+###### Run with NPU
+
+```shell
+adb shell "export ADSP_LIBRARY_PATH=/data/local/tmp/hexagon-v79/unsigned && cd /data/local/tmp && ./qnn-sample-app --backend /data/local/tmp/aarch64-android/libQnnHtp.so --retrieve_context efficientnet_b0-qnn_context_binary-float-qualcomm-snapdragon-8-elite-for-galaxy/efficientnet_b0.bin --input_list input_list.txt --output_dir output --system_library /data/local/tmp/aarch64-android/libQnnSystem.so"
+```
+
+###### Post actions
+
+```shell
+adb pull /data/local/tmp/output/ .
+wget https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt
+python3 postprocess_output.py output/Result_0/class_logits.raw
+```

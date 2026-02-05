@@ -4,3 +4,8 @@ export_assets/
 venv/
 *.tar.gz
 build*/
+efficientnet_b0*/
+dog.jpg
+dog.raw
+output*/
+imagenet_classes.txt
