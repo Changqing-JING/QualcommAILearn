@@ -7,7 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Create genie-t2t-run.exe
-add_executable(genie-t2t-run ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-target_include_directories(genie-t2t-run PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../..//include/Genie)
+# QAIRT SDK path from environment
+if(DEFINED ENV{QAIRT_SDK})
+    set(QAIRT_SDK $ENV{QAIRT_SDK})
+else()
+    message(FATAL_ERROR "QAIRT_SDK environment variable not set")
+endif()
+
+# Create genie-t2t-run
+add_executable(genie-t2t-run main.cpp)
+target_include_directories(genie-t2t-run PRIVATE ${QAIRT_SDK}/include/Genie)
+target_link_directories(genie-t2t-run PRIVATE ${QAIRT_SDK}/lib/aarch64-android)
 target_link_libraries(genie-t2t-run PRIVATE Genie)
