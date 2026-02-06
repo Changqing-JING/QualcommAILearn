@@ -157,12 +157,14 @@ python3 preprocess_image.py dog.jpg dog.raw
 
 ```shell
 adb push efficientnet_b0_npu/efficientnet_b0-qnn_context_binary-float-qualcomm-snapdragon-8-elite-for-galaxy /data/local/tmp
+adb push efficientnet_b0_dlc/efficientnet_b0-qnn_dlc-float
 ```
 
 Or when ADB is slow
 
 ```shell
-adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/efficientnet_b0_npu.tar.gz && tar -xzvf efficientnet_b0.tar.gz --strip-components=1"
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/efficientnet_b0_npu.tar.gz && tar -xzvf efficientnet_b0_npu.tar.gz --strip-components=1"
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/efficientnet_b0_dlc.tar.gz && tar -xzvf efficientnet_b0_dlc.tar.gz --strip-components=1"
 ```
 
 ```shell
@@ -170,6 +172,12 @@ adb push $QAIRT_SDK/examples/QNN/SampleApp/SampleApp/bin/aarch64-android/qnn-sam
 adb shell "chmod +x /data/local/tmp/qnn-sample-app"
 adb push dog.raw /data/local/tmp
 adb push input_list.txt /data/local/tmp
+```
+
+Or download from github
+
+```shell
+adb shell "cd /data/local/tmp && curl -LO https://github.com/Changqing-JING/QualcommAILearn/releases/download/init/qnn-sample-app"
 ```
 
 ###### Run with GPU
@@ -182,6 +190,12 @@ adb shell "export LD_LIBRARY_PATH=/data/local/tmp/aarch64-android && cd /data/lo
 
 ```shell
 adb shell "export ADSP_LIBRARY_PATH=/data/local/tmp/hexagon-v79/unsigned && cd /data/local/tmp && ./qnn-sample-app --backend /data/local/tmp/aarch64-android/libQnnHtp.so --retrieve_context efficientnet_b0-qnn_context_binary-float-qualcomm-snapdragon-8-elite-for-galaxy/efficientnet_b0.bin --input_list input_list.txt --output_dir output --system_library /data/local/tmp/aarch64-android/libQnnSystem.so"
+```
+
+###### Run with CPU
+
+```shell
+adb shell "export LD_LIBRARY_PATH=/data/local/tmp/aarch64-android && cd /data/local/tmp && ./qnn-sample-app --backend /data/local/tmp/aarch64-android/libQnnCpu.so --dlc_path efficientnet_b0-qnn_dlc-float/efficientnet_b0.dlc --input_list input_list.txt --output_dir output --system_library /data/local/tmp/aarch64-android/libQnnSystem.so"
 ```
 
 ###### Post actions
